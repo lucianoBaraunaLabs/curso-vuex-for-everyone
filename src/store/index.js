@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import shop from '@/api/shop'
+
+import actions from './actions'
 import { Promise } from 'core-js'
 
 Vue.use(Vuex)
@@ -9,10 +11,12 @@ export default new Vuex.Store({
   state: { // = data
     products: [],
     // {id, quantity}
-    cart: []
+    cart: [],
+    checkoutStatus: null
   },
   getters: { // = Computed properties
-    // Getter são muito bons para criar calculos ou filtros e são similares as computed properties.
+    // Getter são muito bons para criar calculos ou filtros e são similares
+    // as computed properties.
     // productCount () {
 
     // },
@@ -20,38 +24,51 @@ export default new Vuex.Store({
     // getters = parametro que diz tudo que existes em getters
     availableProducts (state, getters) {
       return state.products.filter(product => product.inventory > 0)
-    }
-  },
-  actions: { // = methods
-    // context = exponhe os métodos do vuex
-    fetchProducts ({commit}) {
-      // make the call
-      // call setProducts mutation
-      return new Promise((resolve, reject) => {
-        shop.getProducts(products => {
-          commit('setProducts', products)
-          resolve()
-        })
+      // return state.products
+    },
+
+    // Mostra os produtos que foram escolhidos
+    cartProducts (state) {
+      return state.cart.map(cartItem => {
+        const product = state.products.find(
+          product => product.id === cartItem.id
+        )
+
+        return {
+          title: product.title,
+          price: product.price,
+          quantity: cartItem.quantity
+        }
       })
     },
 
-    addProductToCart (context, product) {
-      // aqui entra a lógica
-      // find cartItem
-      if (product.inventory > 0) {
-        const cartItem = context.state.cart.find(item => item.id === product.id)
-        if (!cartItem) {
-           // pushProductToCart
-           context.commit('pushProductToCart', product.id)
-        } else {
-          // incrementItemQuantity
-          context.commit('incrementItemQuantity', cartItem)
-        }
-        context.commit('decrementProductInventory', product)
-        
+    // Pegando o total dos produtos
+    cartTotal (state, getters) {
+      // let total = 0
+
+      // getters.cartProducts.forEach(product => {
+      //   total += product.price * product.quantity
+      // })
+
+      // return total
+
+      // Com reduce
+      return getters.cartProducts.reduce(
+        (total, product) => total + product.price * product.quantity, 0
+      )
+    },
+
+    productIsInStock () {
+      // higth order function
+
+      return (product) => {
+        console.log('eita porra', product)
+        return product.inventory > 0
       }
     }
+
   },
+  actions,
   mutations: {
     // responsável pela atualização dos dados na store.
     // state = parametro para acessar o state
@@ -74,6 +91,14 @@ export default new Vuex.Store({
 
     decrementProductInventory (state, product) {
       product.inventory--
+    },
+
+    setCheckoutStatus (state, status) {
+      state.checkoutStatus = status
+    },
+
+    emptyCart (state) {
+      state.cart = []
     }
 
   }
