@@ -15,26 +15,33 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 export default {
-  // computed: {
-  //   products () {
-  //     return this.$store.getters.cartProducts
-  //   },
-  //   total () {
-  //     return this.$store.getters.cartTotal
-  //   }
-  // }
   computed: {
-    ...mapGetters({
+    // sem parâmetro namespace
+    // ...mapGetters({
+    //   // products: 'cartProducts', // sem namespace
+    //   // total: 'cartTotal'
+    //   products: 'cart/cartProducts',
+    //   total: 'cart/cartTotal'
+    // }),
+
+    // quando utilizamos namespace o primeiro argumento de map é o próprio nome
+    // do namespace
+
+    ...mapGetters('cart', {
       products: 'cartProducts',
       total: 'cartTotal'
     }),
 
-    ...mapState({
-      checkoutStatus: 'checkoutStatus'
+    // ...mapState({
+    //   checkoutStatus: state => state.cart.checkoutStatus
+    // })
+    ...mapState('cart', {
+      checkoutStatus: state => state.checkoutStatus
     })
   },
   methods: {
-    ...mapActions(['checkout'])
+    // ...mapActions(['checkout'])
+    ...mapActions('cart', ['checkout'])
   }
 }
 </script>
